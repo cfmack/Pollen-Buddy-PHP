@@ -100,6 +100,10 @@ class PollenBuddy {
 
         // Iterate through the four dates [Wunderground only has four day
         // pollen prediction]
+        $keys = $this->getKeys();
+    	
+    	$categories = array();
+    	
         for($i = 0; $i < 4; $i++) {
 
             // Get the raw date
@@ -109,9 +113,28 @@ class PollenBuddy {
 
             // Get the raw level
             $rawLevel = $this->html
-                ->find("td.even-four div", $i)
-                ->plaintext;
+            ->find("td.even-four div", $i)
+            ->plaintext;
+            
+            
+            // Get the raw date
+            $rawCategoryStyle = $this->html
+            ->find("td.levels div", $i)
+            ->style;
+            
+            $colors = $this->breakCSS($rawCategoryStyle);
+            $color = '';
+            if (isset($colors[PollenBuddy::COLOR_STYLE])) {
+            	$color = $colors[PollenBuddy::COLOR_STYLE];
+            }
+            
 
+            $categories[$rawLevel] = 'Unknown';
+            if (isset($keys[$color])) {
+            	$categories[$rawLevel] = $keys[$color];
+            }
+            
+            
             // Push each date to the dates array
             array_push($this->dates, $rawDate);
             // Push each date to the levels array
@@ -123,6 +146,8 @@ class PollenBuddy {
             $this->dates
         );
 
+        echo print_r($categories, true);
+        
         return $this->fourDayForecast;
     }
 
@@ -159,8 +184,8 @@ class PollenBuddy {
     	}
     
     	$keys = array_combine(
-    			$keyTexts,
-    			$keyColors
+    			$keyColors,
+    			$keyTexts
     	);
     
     	return $keys;
